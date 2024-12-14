@@ -1,0 +1,111 @@
+let stars = []; 
+let numStars = 200; 
+let sunSize = 150;  
+let sunPulseSpeed = 0.16; 
+let sunPulseAmount = 1;  
+
+function setup() {
+  createCanvas(800, 600);
+  noStroke();
+  
+  // Create stars
+  for (let i = 0; i < numStars; i++) {
+    stars.push(new Star(random(width), random(height)));
+  }
+}
+
+function draw() 
+{
+  drawBackground(); 
+
+  // Sun Pulse
+  sunSize += sin(frameCount * sunPulseSpeed) * sunPulseAmount;
+  sunSize = constrain(sunSize, 130, 170); 
+  
+  // Sun
+  drawSun(600, 400, sunSize);
+  
+// Draaw Stars
+  for (let star of stars) {
+    star.twinkle(); 
+    star.display(); 
+  }
+}
+
+// Gradient Background Function
+function drawBackground() {
+  // Create a gradient for the night sky
+  for (let i = 0; i < height; i++) {
+    let inter = map(i, 0, height, 0, 1);
+    let c = lerpColor(color(0, 0, 50), color(0, 0, 100), inter);
+    stroke(c);
+    line(0, i, width, i);
+  }
+
+  // Draw the planet
+  fill(100, 100, 255);
+  ellipse(200, 150, 200, 200); // Earth-like planet
+  
+}
+
+//Function for Abstract shape
+function drawSun(x, y, size) {
+  // Draw Shape
+  beginShape();
+  let noiseFactor = 0;
+  for (let i = 0; i < TWO_PI; i += 0.1) {
+    let radius = size + randomGaussian(0, 20); 
+    let xOffset = cos(i) * radius;
+    let yOffset = sin(i) * radius;
+    
+
+    vertex(x + xOffset, y + yOffset);
+    noiseFactor += 0.1; 
+  }
+  endShape(CLOSE);
+  
+  // Sun Gradient
+  for (let i = size; i > size / 2; i -= 5) {
+    let inter = map(i, size, size / 2, 255, 100);
+    let col1 = color(255, 50, 0); // Red
+    let col2 = color(255, 150, 0); // Orange
+    let col3 = color(255, 255, 0); // Yellow
+    
+    // Blend
+    let c = lerpColor(col1, col2, map(i, size, size / 2, 0, 1));
+    c = lerpColor(c, col3, map(i, size, size / 2, 0, 0.5));
+    
+    
+    fill(c.levels[0], c.levels[1], c.levels[2], inter * random(0.6, 1.0)); 
+    ellipse(x, y, i * 2, i * 2); 
+  }
+}
+
+// Star class 
+class Star {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = random(3, 5); 
+    this.alpha = random(180, 255); 
+    this.twinkleSpeed = random(0.02, 0.1); 
+    this.twinkleAmount = random(0.5, 1.5); 
+  }
+
+  // Function to animate the twinkling effect
+  twinkle() {
+    //opacity
+    this.alpha += sin(frameCount * this.twinkleSpeed) * this.twinkleAmount;
+    this.alpha = constrain(this.alpha, 180, 255); 
+    
+
+    // Twinkling size effect
+    this.size = 3 + sin(frameCount * 0.05 + this.x * 0.1) * 1.5; // Larger range for twinkling size
+  }
+
+  // Display the star with twinkling effect
+  display() {
+    fill(255, 255, 255, this.alpha); 
+    ellipse(this.x, this.y, this.size, this.size); 
+  }
+}
